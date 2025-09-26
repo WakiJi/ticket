@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
 
     <style>
-        /* 背景样式 */
+        /* 背景容器，不应用任何模糊，确保内部内容清晰 */
         body {
             display: flex;
             justify-content: center;
@@ -17,61 +17,50 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            box-sizing: border-box; /* 确保 padding 不会超出视口 */
-            overflow: hidden; /* 防止背景图滚动 */
-
-            /* 随机二次元背景图 */
-            background-image: url('https://api.sretna.cn/api/anime.php'); /* Unsplash随机动漫风景图 */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* 背景固定不随滚动条滚动 */
-            
-            /* 背景模糊效果 */
-            filter: blur(5px); /* 给整个 body 元素添加模糊 */
-            transform: scale(1.02); /* 略微放大以避免模糊边缘 */
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* 覆盖 body 的模糊，以便在上面显示清晰内容 */
-        #app-container {
-            position: fixed; /* 固定在视口中央 */
+        /* 独立的伪元素背景层，负责背景图和模糊效果 */
+        body::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            z-index: 1; /* 确保在模糊背景之上 */
-            filter: none; /* 移除容器自身的模糊 */
-            transform: none; /* 移除容器自身的放大 */
+            background-image: url('https://api.sretna.cn/api/anime.php');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            filter: blur(5px); /* 背景图的模糊效果 */
+            transform: scale(1.02);
+            z-index: -1; /* 确保它在所有内容之下 */
         }
-
+        
         /* 卡片容器样式 - 磨砂效果 */
         .container {
             width: 400px;
-            max-width: 90%; /* 响应式设计 */
-            padding: 25px; /* 增加内边距 */
-            background-color: rgba(255, 255, 255, 0.1); /* 半透明白色背景 */
-            border-radius: 16px; /* 圆角 */
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* 阴影 */
-            border: 1px solid rgba(255, 255, 255, 0.18); /* 边框 */
-            
-            /* 磨砂效果关键属性 */
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%); /* Safari 兼容 */
-            
-            color: #fff; /* 文字颜色 */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* 文字阴影 */
+            max-width: 90%;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.1); /* 半透明背景 */
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px) saturate(180%); /* 磨砂效果 */
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
             box-sizing: border-box;
+            z-index: 1; /* 确保它在伪元素背景之上 */
         }
         
         /* 标题样式 */
         h1 {
             text-align: center;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; /* 更改字体 */
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
             color: #fff;
             margin-bottom: 15px;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
@@ -91,15 +80,15 @@
             margin-bottom: 25px;
             --mdui-text-field-label-color: rgba(255, 255, 255, 0.7);
             --mdui-text-field-input-color: #fff;
-            --mdui-text-field-focus-line-color: #92e3a9; /* 聚焦时的底部线颜色 */
+            --mdui-text-field-focus-line-color: #92e3a9;
             --mdui-text-field-hover-line-color: rgba(255, 255, 255, 0.5);
-            --mdui-text-field-text-color: #fff; /* 输入文字的颜色 */
+            --mdui-text-field-text-color: #fff;
         }
         
         /* 按钮样式 */
         mdui-button {
             --mdui-button-text-color: #fff;
-            --mdui-button-background-color: rgba(146, 227, 169, 0.7); /* 半透明绿色 */
+            --mdui-button-background-color: rgba(146, 227, 169, 0.7);
             --mdui-button-hover-background-color: rgba(146, 227, 169, 0.9);
             --mdui-button-pressed-background-color: rgba(146, 227, 169, 1);
             font-weight: bold;
@@ -109,7 +98,7 @@
 
         /* 下拉菜单项的颜色调整 */
         mdui-menu-item {
-             color: #333; /* 默认菜单项文字颜色 */
+             color: #333;
         }
         mdui-menu-item:hover {
             background-color: rgba(146, 227, 169, 0.2);
@@ -118,31 +107,29 @@
 </head>
 <body>
 
-<div id="app-container">
-    <div class="container">
-        <div>
-            <h1>舞萌痴 Web 跑图券</h1>
-            <p>Worker URL 已内置，输入 User ID 即可操作。</p>
-            
-            <mdui-text-field label="User ID" id="uid_input" type="number" required></mdui-text-field>
+<div class="container">
+    <div>
+        <h1>舞萌痴 Web 跑图券</h1>
+        <p>Worker URL 已内置，输入 User ID 即可操作。</p>
+        
+        <mdui-text-field label="User ID" id="uid_input" type="number" required></mdui-text-field>
 
-            <mdui-select label="跑图券倍数" id="ticket_select">
-                <mdui-menu-item value="2">2 倍券</mdui-menu-item>
-                <mdui-menu-item value="3">3 倍券</mdui-menu-item>
-                <mdui-menu-item value="4">4 倍券</mdui-menu-item>
-                <mdui-menu-item value="5">5 倍券</mdui-menu-item>
-                <mdui-menu-item value="6">6 倍券</mdui-menu-item>
-            </mdui-select>
+        <mdui-select label="跑图券倍数" id="ticket_select">
+            <mdui-menu-item value="2">2 倍券</mdui-menu-item>
+            <mdui-menu-item value="3">3 倍券</mdui-menu-item>
+            <mdui-menu-item value="4">4 倍券</mdui-menu-item>
+            <mdui-menu-item value="5">5 倍券</mdui-menu-item>
+            <mdui-menu-item value="6">6 倍券</mdui-menu-item>
+        </mdui-select>
 
-            <mdui-button fullwidth id="ticket_btn" variant="tonal">发放跑图券</mdui-button>
-        </div>
+        <mdui-button fullwidth id="ticket_btn" variant="tonal">发放跑图券</mdui-button>
     </div>
 </div>
 
 <script>
     // ** 【重要】请替换为您的 Cloudflare Worker 实际地址！ **
-    const WORKER_PROXY_URL = "https://ticket.2206602594.workers.dev/index";
-    // 示例: const WORKER_PROXY_URL = "https://my-maimai-worker.workers.dev/ticket";
+    const WORKER_PROXY_URL = "YOUR_DEPLOYED_WORKER_URL_HERE/ticket";
+    // 示例: const WORKER_PROXY_URL = "https://ticket.2206602594.workers.dev/ticket";
 
     // --- 核心业务逻辑：通过 Worker API 发送请求 ---
     async function sendTicket(uid, ticketId) {
