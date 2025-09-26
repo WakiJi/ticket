@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
 
     <style>
-        /* 背景容器，不应用任何模糊，确保内部内容清晰 */
+        /* 背景容器 */
         body {
             display: flex;
             justify-content: center;
@@ -35,14 +35,14 @@
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            filter: blur(5px); /* 背景图的模糊效果 */
+            filter: blur(5px);
             transform: scale(1.02);
-            z-index: -1; /* 确保它在所有内容之下 */
+            z-index: -1;
         }
-        
+       
         /* 卡片容器样式 - 磨砂效果 */
         .container {
-            width: 400px;
+            width: 450px; /* 稍微加宽以容纳更多内容 */
             max-width: 90%;
             padding: 25px;
             background-color: rgba(255, 255, 255, 0.1); /* 半透明背景 */
@@ -54,9 +54,9 @@
             color: #fff;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
             box-sizing: border-box;
-            z-index: 1; /* 确保它在伪元素背景之上 */
+            z-index: 1;
         }
-        
+       
         /* 标题样式 */
         h1 {
             text-align: center;
@@ -66,42 +66,63 @@
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
         }
 
-        /* 副标题/提示文字 */
-        p {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9em;
-            margin-bottom: 25px;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-        }
-
-        /* 输入框和选择框颜色调整 */
-        mdui-text-field, mdui-select {
-            margin-bottom: 25px;
+        /* 输入框、选择框和按钮的磨砂背景 */
+        mdui-text-field, mdui-select, mdui-button {
             --mdui-text-field-label-color: rgba(255, 255, 255, 0.7);
             --mdui-text-field-input-color: #fff;
             --mdui-text-field-focus-line-color: #92e3a9;
             --mdui-text-field-hover-line-color: rgba(255, 255, 255, 0.5);
             --mdui-text-field-text-color: #fff;
-        }
-        
-        /* 按钮样式 */
-        mdui-button {
-            --mdui-button-text-color: #fff;
+            margin-bottom: 25px;
+            
+            /* 为输入框和选择框主体添加磨砂玻璃背景 */
+            --mdui-text-field-container-color: rgba(255, 255, 255, 0.05);
+            --mdui-select-container-color: rgba(255, 255, 255, 0.05);
+
+            /* 按钮磨砂背景 */
             --mdui-button-background-color: rgba(146, 227, 169, 0.7);
             --mdui-button-hover-background-color: rgba(146, 227, 169, 0.9);
             --mdui-button-pressed-background-color: rgba(146, 227, 169, 1);
-            font-weight: bold;
-            letter-spacing: 1px;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            --mdui-button-text-color: #fff;
         }
 
+        /* 状态查询按钮的特殊颜色 */
+        #status_btn {
+            --mdui-button-background-color: rgba(66, 165, 245, 0.7); /* 蓝色 */
+            --mdui-button-hover-background-color: rgba(66, 165, 245, 0.9);
+            --mdui-button-pressed-background-color: rgba(66, 165, 245, 1);
+        }
+       
         /* 下拉菜单项的颜色调整 */
         mdui-menu-item {
-             color: #333;
+             color: #333; /* 选项本身保持深色以保证可读性 */
         }
         mdui-menu-item:hover {
             background-color: rgba(146, 227, 169, 0.2);
+        }
+
+        /* 状态显示区域样式 */
+        #status_output {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #eee;
+        }
+
+        /* 跑图券和查询按钮并排布局 */
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+        .flex-row mdui-select {
+            flex-grow: 1;
         }
     </style>
 </head>
@@ -111,47 +132,55 @@
     <div>
         <h1>舞萌痴 Web 跑图券</h1>
         <p>Worker URL 已内置，输入 User ID 即可操作。</p>
-        
+       
         <mdui-text-field label="User ID" id="uid_input" type="number" required></mdui-text-field>
 
-        <mdui-select label="跑图券倍数" id="ticket_select">
-            <mdui-menu-item value="2">2 倍券</mdui-menu-item>
-            <mdui-menu-item value="3">3 倍券</mdui-menu-item>
-            <mdui-menu-item value="4">4 倍券</mdui-menu-item>
-            <mdui-menu-item value="5">5 倍券</mdui-menu-item>
-            <mdui-menu-item value="6">6 倍券</mdui-menu-item>
-        </mdui-select>
+        <div class="flex-row">
+            <mdui-select label="跑图券倍数" id="ticket_select">
+                <mdui-menu-item value="2">2 倍券</mdui-menu-item>
+                <mdui-menu-item value="3">3 倍券</mdui-menu-item>
+                <mdui-menu-item value="4">4 倍券</mdui-menu-item>
+                <mdui-menu-item value="5">5 倍券</mdui-menu-item>
+                <mdui-menu-item value="6">6 倍券</mdui-menu-item>
+            </mdui-select>
 
-        <mdui-button fullwidth id="ticket_btn" variant="tonal">发放跑图券</mdui-button>
+            <mdui-button id="ticket_btn" variant="tonal">发放跑图券</mdui-button>
+        </div>
+        
+        <mdui-button fullwidth id="status_btn" variant="tonal">获取用户状态</mdui-button>
+
+        <div id="status_output" style="display: none;"></div>
     </div>
 </div>
 
 <script>
     // ** 【重要】请替换为您的 Cloudflare Worker 实际地址！ **
-    const WORKER_PROXY_URL = "https://ticket.2206602594.workers.dev/ticket";
-    // 示例: const WORKER_PROXY_URL = "https://my-maimai-worker.workers.dev/ticket";
+    const WORKER_BASE_URL = "https://ticket.2206602594.workers.dev";
+    const TICKET_URL = `${WORKER_BASE_URL}/ticket`;
+    const STATUS_URL = `${WORKER_BASE_URL}/status`; // 新增状态查询接口
 
     // --- 核心业务逻辑：通过 Worker API 发送请求 ---
-    async function sendTicket(uid, ticketId) {
-        if (!WORKER_PROXY_URL.startsWith('http')) {
+    async function sendRequest(url, uid, data) {
+        if (!WORKER_BASE_URL.startsWith('http')) {
             throw new Error("Worker URL 未配置或格式错误，请检查 index.html 文件。");
         }
-        
-        // 前端只发送 User ID 和要发放的倍券 ID
-        const response = await fetch(WORKER_PROXY_URL, {
+       
+        const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ uid: uid, ticket_id: ticketId })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: uid, ...data })
         });
 
         if (!response.ok) {
              throw new Error("网络请求失败，请检查 Worker URL 和状态码: " + response.status);
         }
 
-        const jsonResponse = await response.json();
-        return jsonResponse;
+        return response.json();
+    }
+
+    // --- 新增：获取用户状态逻辑 ---
+    async function getUserStatus(uid) {
+        return sendRequest(STATUS_URL, uid, {});
     }
 
     // --- 事件监听和记忆功能 ---
@@ -159,48 +188,44 @@
         const uidInput = document.getElementById('uid_input');
         const ticketSelect = document.getElementById('ticket_select');
         const ticketBtn = document.getElementById('ticket_btn');
+        const statusBtn = document.getElementById('status_btn');
+        const statusOutput = document.getElementById('status_output');
 
         // 加载记忆值
         const lastUid = localStorage.getItem("last_uid");
-        if (lastUid) {
-            uidInput.value = lastUid;
-        }
+        if (lastUid) uidInput.value = lastUid;
         const lastTicket = localStorage.getItem("last_ticket");
         if (lastTicket) {
             ticketSelect.value = lastTicket;
         } else {
-            // 如果没有记忆，默认选中2倍券
             ticketSelect.value = "2";
         }
 
-        // 当输入框或选择框值改变时，保存到本地
+        // 保存记忆值
         uidInput.addEventListener("blur", () => { localStorage.setItem("last_uid", uidInput.value); });
         ticketSelect.addEventListener("change", () => { localStorage.setItem("last_ticket", ticketSelect.value); });
 
+
+        // ** 【发放跑图券】按钮点击事件 **
         ticketBtn.addEventListener("click", async () => {
             const uid = parseInt(uidInput.value);
-            const ticketId = parseInt(ticketSelect.value); // 从下拉菜单获取值
+            const ticketId = parseInt(ticketSelect.value);
 
-            if (isNaN(uid) || uid <= 0) {
-                return mdui.snackbar({ message: "请输入有效的 User ID" });
-            }
-            if (isNaN(ticketId) || ticketId < 2 || ticketId > 6) {
-                return mdui.snackbar({ message: "请选择跑图券倍数" });
-            }
-            
+            if (isNaN(uid) || uid <= 0) return mdui.snackbar({ message: "请输入有效的 User ID" });
+            if (isNaN(ticketId) || ticketId < 2 || ticketId > 6) return mdui.snackbar({ message: "请选择跑图券倍数" });
+           
             mdui.confirm({
                 headline: "确认发放",
-                description: `确认向用户 <strong>${uid}</strong> 发放 <strong>${ticketId} 倍</strong> 跑图券吗？`,
+                description: `确认向用户 ${uid} 发放 ${ticketId} 倍 跑图券吗？`,
                 confirmText: "确认发放",
                 cancelText: "取消",
                 onConfirm: async () => {
-                    
-                    // 常驻 Snackbar 提示
+                   
                     const loadingSnack = mdui.snackbar({ message: "正在执行，请等待 Worker 完成...", closeOnOutsideClick: false, timeout: 0 });
 
                     try {
-                        const result = await sendTicket(uid, ticketId);
-                        
+                        const result = await sendRequest(TICKET_URL, uid, { ticket_id: ticketId });
+                       
                         if (result.is_success) {
                             mdui.alert({
                                 headline: "操作成功",
@@ -222,10 +247,71 @@
                         });
                     } finally {
                         // 移除常驻 Snackbar
-                        document.querySelector('mdui-snackbar[open]').remove();
+                        const activeSnack = document.querySelector('mdui-snackbar[open]');
+                        if (activeSnack) activeSnack.remove();
                     }
                 }
             });
+        });
+
+        // ** 【获取用户状态】按钮点击事件 **
+        statusBtn.addEventListener("click", async () => {
+            const uid = parseInt(uidInput.value);
+            if (isNaN(uid) || uid <= 0) return mdui.snackbar({ message: "请输入有效的 User ID" });
+
+            const loadingSnack = mdui.snackbar({ message: "正在查询用户状态...", closeOnOutsideClick: false, timeout: 0 });
+            statusOutput.style.display = 'none';
+
+            try {
+                const result = await getUserStatus(uid);
+
+                if (result.is_success) {
+                    const statusData = result.data;
+                    let ticketInfo = "未持有跑图券";
+                    
+                    // 检查跑图券状态
+                    const chargeList = statusData.charges.userChargeList || [];
+                    const activeTicket = chargeList.find(charge => charge.stock > 0);
+
+                    if (activeTicket) {
+                        const expireTime = new Date(activeTicket.validDate);
+                        ticketInfo = `${activeTicket.chargeId} 倍券 (ID: ${activeTicket.chargeId}, 剩余: ${activeTicket.stock}，有效期至: ${expireTime.toLocaleString()})`;
+                    }
+
+                    const outputText = 
+                        `【用户状态查询结果】\n` +
+                        `User ID: ${uid}\n` +
+                        `用户名称: ${statusData.user.userData.userName}\n` +
+                        `玩家 Rating: ${statusData.user.userData.playerRating}\n` +
+                        `游玩次数: ${statusData.user.userData.playCount}\n` +
+                        `当前跑图券: ${ticketInfo}\n`;
+                    
+                    statusOutput.textContent = outputText;
+                    statusOutput.style.display = 'block';
+
+                    mdui.snackbar({ message: "用户状态查询成功！" });
+                } else {
+                    statusOutput.textContent = `查询失败: ${result.message}\n错误详情: ${JSON.stringify(result.error || {})}`;
+                    statusOutput.style.display = 'block';
+                    mdui.snackbar({ message: "查询失败，请查看详情。" });
+                }
+
+            } catch (e) {
+                statusOutput.textContent = `网络或 Worker 错误: ${e.message}`;
+                statusOutput.style.display = 'block';
+                mdui.snackbar({ message: "查询时发生错误。" });
+            } finally {
+                const activeSnack = document.querySelector('mdui-snackbar[open]');
+                if (activeSnack) activeSnack.remove();
+            }
+        });
+
+        // 由于 mdui-select 的样式复杂，确保它正确渲染
+        const selects = document.querySelectorAll('mdui-select');
+        selects.forEach(select => {
+            if (select._component) {
+                select._component.update(); // 强制组件更新，修正样式和位置
+            }
         });
     });
 </script>
