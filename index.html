@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+    <title>安全跑图券工具</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+
+    <style>
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f0f0; }
+        .container { width: 400px; padding: 20px; }
+        mdui-select { margin-bottom: 25px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <mdui-card>
+        <div style="padding: 20px;">
+            <h1 style="text-align: center;">安全 Web 跑图券</h1>
+            <p style="text-align: center; color: gray; font-size: 0.9em;">Worker URL 已内置，输入 User ID 即可操作。</p>
+            
+            <mdui-text-field label="User ID" id="uid_input" type="number" required style="margin-bottom: 25px;"></mdui-text-field>
+
+            <mdui-select label="跑图券倍数" id="ticket_select">
+                <mdui-menu-item value="2">2 倍券</mdui-menu-item>
+                <mdui-menu-item value="3">3 倍券</mdui-menu-item>
+                <mdui-menu-item value="4">4 倍券</mdui-menu-item>
+                <mdui-menu-item value="5">5 倍券</mdui-menu-item>
+                <mdui-menu-item value="6">6 倍券</mdui-menu-item>
+            </mdui-select>
+
+            <mdui-button fullwidth id="ticket_btn" variant="tonal">发放跑图券</mdui-button>
+        </div>
+    </mdui-card>
+</div>
+
+<script>
+    // ** 【重要】请替换为您的 Cloudflare Worker 实际地址！ **
+    const WORKER_PROXY_URL = "YOUR_DEPLOYED_WORKER_URL_HERE/ticket";
+    // 示例: const WORKER_PROXY_URL = "https://my-maimai-worker.workers.dev/ticket";
+
+    // --- 核心业务逻辑：通过 Worker API 发送请求 ---
+    async function sendTicket(uid, ticketId) {
+        if (!WORKER_PROXY_URL.startsWith('http')) {
+            throw new Error("Worker URL 未配置或格式错误，请检查 index.html 文件。");
+        }
+        
+        // 前端只发送 User ID 和要发放的倍券 ID
+        const response = await fetch(WORKER_PROXY_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ uid: uid, ticket_id: ticketId })
+        });
+
+        if (!response.ok) {
+             throw new Error("网络请求失败，请检查 Worker URL 和状态码: " + response.status);
+        }
+
+        const jsonResponse = await response.json();
+        return jsonResponse;
+    }
+
+    // --- 事件监听和记忆功能 ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const uidInput = document.getElementById('uid_input');
+        const ticketSelect = document.getElementById('ticket_select');
+        const ticketBtn = document.getElementById('ticket_btn');
+
+        // 加载记忆值
+        const lastUid = localStorage.getItem("last_uid");
+        if (lastUid) {
+            uidInput.value = lastUid;
+        }
+        const lastTicket = localStorage.getItem("last_ticket");
+        if (lastTicket) {
+            ticketSelect.value = lastTicket;
+        } else {
+            // 如果没有记忆，默认选中2倍券
+            ticketSelect.value = "2";
+        }
+
+        // 当输入框或选择框值改变时，保存到本地
+        uidInput.addEventListener("blur", () => { localStorage.setItem("last_uid", uidInput.value); });
+        ticketSelect.addEventListener("change", () => { localStorage.setItem("last_ticket", ticketSelect.value); });
+
+        ticketBtn.addEventListener("click", async () => {
+            const uid = parseInt(uidInput.value);
+            const ticketId = parseInt(ticketSelect.value); // 从下拉菜单获取值
+
+            if (isNaN(uid) || uid <= 0) {
+                return mdui.snackbar({ message: "请输入有效的 User ID" });
+            }
+            if (isNaN(ticketId) || ticketId < 2 || ticketId > 6) {
+                return mdui.snackbar({ message: "请选择跑图券倍数" });
+            }
+            
+            mdui.confirm({
+                headline: "确认发放",
+                description: `确认向用户 <strong>${uid}</strong> 发放 <strong>${ticketId} 倍</strong> 跑图券吗？`,
+                confirmText: "确认发放",
+                cancelText: "取消",
+                onConfirm: async () => {
+                    
+                    // 常驻 Snackbar 提示
+                    const loadingSnack = mdui.snackbar({ message: "正在执行，请等待 Worker 完成...", closeOnOutsideClick: false, timeout: 0 });
+
+                    try {
+                        const result = await sendTicket(uid, ticketId);
+                        
+                        if (result.is_success) {
+                            mdui.alert({
+                                headline: "操作成功",
+                                description: result.message,
+                                confirmText: "好"
+                            });
+                        } else {
+                            mdui.alert({
+                                headline: "操作失败",
+                                description: `${result.message} <br><br> 错误详情: ${JSON.stringify(result.data || result.error || {})}`,
+                                confirmText: "好"
+                            });
+                        }
+                    } catch (e) {
+                         mdui.alert({
+                            headline: "网络或 Worker 错误",
+                            description: `请检查您的 Worker 配置和部署状态。<br><br> 错误信息: ${e.message}`,
+                            confirmText: "好"
+                        });
+                    } finally {
+                        // 移除常驻 Snackbar
+                        document.querySelector('mdui-snackbar[open]').remove();
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
